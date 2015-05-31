@@ -1,0 +1,93 @@
+#!/bin/bash
+
+className=Main
+fileName=${className}
+gaurdName=$(echo ${className}| tr '[:lower:]' '[:upper:]')
+location=${1+"${1}/"}
+
+
+cat << _EOF_ >> ${location}${fileName}.hpp
+#ifndef ${gaurdName}_HPP
+#define ${gaurdName}_HPP
+
+class ${className};
+class ${className}
+{
+private:
+	${className}();
+	static ${className}* a_oInstance;
+	static int a_iExitCode;
+	bool a_bIsRunning;
+
+	void Fx_ShutDown();
+public:
+	~${className}();
+	static ${className}* GetInstance();
+	static void ErrorShutDown(int iExitCode = 1);
+
+	int Entry();
+};
+#endif
+_EOF_
+
+cat << _EOF_ >> ${location}${fileName}.cpp
+#include "${fileName}.hpp"
+
+${className}* ${className}::a_oInstance = 0;
+int ${className}::a_iExitCode = 0;
+
+${className}::${className}()
+{
+	a_bIsRunning = false;
+}
+
+${className}::~${className}()
+{
+
+}
+
+${className}* ${className}::GetInstance()
+{
+	if(a_oInstance) { return a_oInstance; }
+	a_oInstance = new ${className}();
+	return a_oInstance;
+}
+
+void ${className}::ErrorShutDown(int iExitCode)
+{
+	if(a_oInstance) { a_oInstance->Fx_ShutDown(); }
+	a_iExitCode = (iExitCode ? iExitCode : 1);
+	exit(a_iExitCode);
+}
+
+int ${className}::Entry()
+{
+	if(a_bIsRunning) {
+		printf("-Log.Warning:Call to 'Entry' of ${className}, but entry already called before\n");
+		return 1; 
+	}
+	a_bIsRunning = true;
+
+	// TODO Code here
+
+	Fx_ShutDown();
+	return a_iExitCode;
+}
+
+void ${className}::Fx_ShutDown()
+{
+	
+}
+_EOF_
+
+
+cat << _EOF_ >> ${location}main.cpp
+#include "${fileName}.hpp"
+
+int main()
+{
+	Main* oApplication = Main::GetInstance();
+	int iEntryReturn = oApplication->Entry();
+	return iEntryReturn;
+}
+_EOF_

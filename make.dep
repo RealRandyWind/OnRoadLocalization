@@ -1,0 +1,12 @@
+
+BASE_DEPS= 
+PRJ_BASE_DEPS= 
+MNG_BASE_DEPS=MLogManager.hpp
+$(ENTRY).o: $(ENTRY).cpp $(ENTRY_DEPS) $(BASE_DEPS)
+
+Main.o: $($@:%.o=%.cpp %.hpp) $(BASE_DEPS) $(MNG_BASE_DEPS) MOpenCLManager.hpp MComputationManager.hpp  
+MLogManager.o: $($@:%.o=%.cpp %.hpp) $(BASE_DEPS)
+MOpenCLManager.o: $($@:%.o=%.cpp %.hpp) $(BASE_DEPS) $(MNG_BASE_DEPS) OpenCLProgram.hpp OpenCLArgument.hpp 
+OpenCLProgram.o: $($@:%.o=%.cpp %.hpp) $(BASE_DEPS) $(MNG_BASE_DEPS) OpenCLArgument.hpp
+OpenCLArgument.o: $($@:%.o=%.cpp %.hpp) $(BASE_DEPS) $(MNG_BASE_DEPS)
+MComputationManager.o: $($@:%.o=%.cpp %.hpp) $(BASE_DEPS) $(MNG_BASE_DEPS) $(PRJ_BASE_DEPS)

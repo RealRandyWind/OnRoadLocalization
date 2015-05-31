@@ -1,0 +1,39 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+	echo "No className given."
+	exit 1
+fi
+className=$(echo ${1}| sed 's/\(.\)/\U\1/')
+fileName=${className}
+gaurdName=$(echo ${className}| tr '[:lower:]' '[:upper:]')
+location=${2+"${2}/"}
+
+
+cat << _EOF_ >> ${location}${fileName}.hpp
+#ifndef ${gaurdName}_HPP
+#define ${gaurdName}_HPP
+
+class ${className};
+class ${className}
+{
+public:
+	${className}();
+	~${className}();
+};
+#endif
+_EOF_
+
+cat << _EOF_ >> ${location}${fileName}.cpp
+#include "${fileName}.hpp"
+
+${className}::${className}()
+{
+
+}
+
+${className}::~${className}()
+{
+
+}
+_EOF_

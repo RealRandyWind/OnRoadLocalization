@@ -1,0 +1,96 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+	echo "No className given."
+	exit 1
+fi
+
+constsName=$(echo ${1}consts| tr '[:upper:]' '[:lower:]')
+className=$(echo ${1}base| tr '[:upper:]' '[:lower:]')
+fileName=${className}
+gaurdName=$(echo ${className}| tr '[:lower:]' '[:upper:]')
+prefixName=$(echo ${1}| tr '[:lower:]' '[:upper:]')
+location=${2+"${2}/"}
+
+
+cat << _EOF_ >> ${location}${fileName}.hpp
+#ifndef ${gaurdName}_HPP
+#define ${gaurdName}_HPP
+
+#include <stdio.h>
+#include <assert.h> 
+#include <math.h>
+
+#include <vector>
+#include <map>
+#include <string>
+
+#define ${prefixName}UInteger unsigned int
+#define ${prefixName}Integer int
+#define ${prefixName}Double double
+#define ${prefixName}Float float
+#define ${prefixName}Character char
+#define ${prefixName}SizeT size_t
+#define ${prefixName}Void void
+#define ${prefixName}Null NULL
+#define ${prefixName}String std::string
+#define ${prefixName}Vector std::vector
+#define ${prefixName}Map std::map
+#ifndef ${prefixName}Boolean
+#define ${prefixName}Boolean bool
+#define ${prefixName}True true
+#define ${prefixName}False false
+#endif
+
+#include "${constsName}.hpp"
+#include "${fileName}.inl"
+#endif
+_EOF_
+
+cat << _EOF_ >> ${location}${constsName}.hpp
+#ifndef ${gaurdName}_INL
+#define ${gaurdName}_INL
+
+#define PI 3.1415926535897932384626433832795028841971693993751058
+#define GOLDEN_RADIANT 2.3999632297286533222315555066336138531249990110581150
+#define GOLDEN_DEGREE 137.50776405003785464634873962837027762068869526992536
+#define GOLDEN_RATIO 1.6180339887498948482045868343656381177203091798057628
+
+#define DEGREE(a) ((a)*180.0)/PI
+#define RADIANS(a) ((a)*PI)/180.0
+
+#define CLAMP(a,b,c) ((a) < (b) ? (b) : ((a) > (c) ? (c) : (a)))
+#define U_CLAMP(a,b) ((a)>(b) ? (b) : (a))
+#define L_CLAMP(a,b) ((a)<(b) ? (b) : (a))
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+#define ABS(a) ((a) < 0.0 ? -(a) : (a))
+
+#define NORMALIZE(a) ((a) < 0.0 ? -1.0 : 1.0)
+#define SIGN(a) NORMALIZE(a)
+
+#define SCALE_FACTOR(a,b) ((a) < 0.0 ? 1.0/(b) :((a) > 0.0 ? (b) : 1.0))
+
+#define MOD(a,b) ((a)-static_cast<double>(static_cast<int>((a)/(b)))*(b))
+#define MOD2(a,b) ((a) >= (b) ? MOD(a,b) : (a))
+
+#define EPS 1e-9
+#define EPS2 1e-16
+#define EPS_MINIMUM 1e-32
+#define EPS_MAXIMUM 1e32
+#define EPS_MUL 1e-5
+
+#define EPS_ZERO(a) ((a) <= EPS ? 0.0 : (a))
+#define EPS_ISZERO(a) ((a) <= EPS)
+#define EPS_ISEQUAL(a,b) ((b) <= (a) ? (b) - (a) <= EPS : (a) - (b) <= EPS)
+#define EPS2_ISEQUAL(a,b) ((b) <= (a) ? (b) - (a) <= EPS2 : (a) - (b) <= EPS2)
+
+#endif
+_EOF_
+
+cat << _EOF_ >> ${location}${fileName}.inl
+#ifndef ${gaurdName}_INL
+#define ${gaurdName}_INL
+
+#endif
+_EOF_

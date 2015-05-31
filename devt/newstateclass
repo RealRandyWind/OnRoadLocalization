@@ -1,0 +1,64 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+	echo "No className given."
+	exit 1
+fi
+
+className=$(echo ${1}| sed 's/\(.\)/\U\1/')
+fileName=${className}
+gaurdName=$(echo ${className}| tr '[:lower:]' '[:upper:]')
+structStateName=$(echo ${className}State| tr '[:upper:]' '[:lower:]')
+location=${2+"${2}/"}
+
+
+cat << _EOF_ >> ${location}${fileName}.hpp
+#ifndef ${gaurdName}_HPP
+#define ${gaurdName}_HPP
+
+typedef struct a_struct_${structStateName} ${className}State;
+struct a_struct_${structStateName} {
+	unsigned int iID;
+	a_struct_${structStateName} (
+		unsigned int iID
+	) : iID(iID) { }
+};
+
+class ${className};
+class ${className}
+{
+private:
+	unsigned int a_iID;
+public:
+	${className}();
+	~${className}();
+
+	unsigned int GetId();
+	${className}State GetState();
+};
+#endif
+_EOF_
+
+cat << _EOF_ >> ${location}${fileName}.cpp
+#include "${fileName}.hpp"
+
+${className}::${className}()
+{
+
+}
+
+${className}::~${className}()
+{
+
+}
+
+unsigned int ${className}::GetId()
+{
+	return a_iID;
+}
+
+${className}State ${className}::GetState()
+{
+	return ${className}State(a_iID);
+}
+_EOF_

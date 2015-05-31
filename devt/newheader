@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+	echo "No className given."
+	exit 1
+fi
+
+className=$(echo ${1}| tr '[:upper:]' '[:lower:]')
+fileName=${className}
+gaurdName=$(echo ${className}| tr '[:lower:]' '[:upper:]')
+location=${2+"${2}/"}
+
+cat << _EOF_ >> ${location}${fileName}.hpp
+#ifndef ${gaurdName}_HPP
+#define ${gaurdName}_HPP
+
+#endif
+_EOF_

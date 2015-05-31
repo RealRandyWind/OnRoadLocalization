@@ -1,0 +1,153 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+	echo "No className given."
+	exit 1
+fi
+
+className=FM$(echo ${1}| sed 's/\(.\)/\U\1/')
+fileName=${className}
+gaurdName=$(echo ${className}| tr '[:lower:]' '[:upper:]')
+productInterfaceName=${2}
+location=${3+"${3}/"}
+
+
+
+cat << _EOF_ >> ${location}${fileName}.hpp
+#ifndef ${gaurdName}_HPP
+#define ${gaurdName}_HPP
+#include <vector>
+#include "${productInterfaceName}.hpp"
+
+enum E${productInterfaceName}Type {
+	DEFAULT
+};
+
+class ${productInterfaceName};
+
+class ${className};
+class ${className}
+{
+private:
+	${className}();
+	static ${className}* a_oInstance;
+	bool a_bIsSetUp;
+	bool a_bIsShutDown;
+	
+	std::vector<${productInterfaceName}*> a_lProducts;
+	${productInterfaceName}* Fx_BuiltDefaultProduct();
+public:
+	~${className}();
+	static ${className}* GetInstance();
+
+	void SetUp();
+	void ShutDown();
+	
+	${productInterfaceName}* BuiltProduct(E${productInterfaceName}Type eType);
+	
+	${productInterfaceName}* GetProduct(unsigned int iProduct);
+	std::vector<${productInterfaceName}*> GetProducts(std::vector<unsigned int> liProducts);
+	void DestroyProduct(unsigned int iProduct);
+	void DestroyProducts(std::vector<unsigned int> liProducts);
+};
+#endif
+_EOF_
+
+cat << _EOF_ >> ${location}${fileName}.cpp
+#include "${fileName}.hpp"
+
+${className}* ${className}::a_oInstance = 0;
+
+${className}::${className}()
+{
+	a_bIsShutDown = false;
+	a_bIsSetUp = false;
+}
+
+${className}::~${className}()
+{
+
+}
+
+${className}* ${className}::GetInstance()
+{
+	if(a_oInstance) { return a_oInstance; }
+	a_oInstance = new ${className}();
+	return a_oInstance;
+}
+
+void ${className}::SetUp()
+{
+	if(a_bIsSetUp) {
+		return; 
+	}
+	a_bIsShutDown = false;
+
+	// TODO ${className} SetUp
+
+	a_bIsSetUp = true;
+}
+
+void ${className}::ShutDown()
+{
+	if(a_bIsShutDown) {
+		return; 
+	}
+	a_bIsSetUp = false;
+
+	// TODO ${className} ShutDown
+
+	a_bIsShutDown = true;
+}
+
+${productInterfaceName}* ${className}::BuiltProduct(E${productInterfaceName}Type eType)
+{
+	${productInterfaceName}* oProduct;
+
+	switch (eType) 
+	{
+		case DEFAULT: oProduct = Fx_BuiltDefaultProduct(); break;
+		default: break;
+	}
+
+	a_lProducts.push_back(oProduct);
+	return oProduct;
+}
+
+${productInterfaceName}* ${className}::Fx_BuiltDefaultProduct()
+{
+	return 0;
+}
+
+${productInterfaceName}* ${className}::GetProduct(unsigned int iProduct)
+{
+	if(iProduct < 0 || iProduct >= a_lProducts.size()) { return NULL; }
+	
+	return a_lProducts[iProduct];
+}
+
+std::vector<${productInterfaceName}*> ${className}::GetProducts(std::vector<unsigned int> liProducts)
+{
+	std::vector<${productInterfaceName}*> loProducts;
+	for(unsigned int iProduct : liProducts) {
+		${productInterfaceName}* oProduct = GetProduct(iProduct);
+		if(!oProduct) { continue; }
+		loProducts.push_back(oProduct);
+	}
+
+	return loProducts;
+}
+
+void ${className}::DestroyProduct(unsigned int iProduct)
+{
+	${productInterfaceName}* oProduct = GetProduct(iProduct);
+	if(!oProduct) { return; }
+	delete oProduct;
+	a_lProducts[iProduct] = NULL;
+}
+
+void ${className}::DestroyProducts(std::vector<unsigned int> liProducts)
+{
+	for(unsigned int iProduct : liProducts) { DestroyProduct(iProduct); }
+}
+_EOF_
