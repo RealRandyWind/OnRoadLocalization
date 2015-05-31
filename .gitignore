@@ -29,3 +29,6 @@
 
 # Custom
 bin
+deps
+ipch
+resources
