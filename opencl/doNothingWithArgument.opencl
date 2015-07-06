@@ -1,4 +1,4 @@
-__kernel void main(__global float* ldData)
+__kernel void entry(__global float* ldData)
 {
 	/*DO NOTHING WITH ARGUMENT*/
 }

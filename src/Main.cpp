@@ -9,9 +9,13 @@ Main::Main()
 
 	a_mLogManager = MLogManager::GetInstance();
 	a_mSettingsManager = MSettingsManager::GetInstance();
+	a_mMemoryManager = MMemoryManager::GetInstance();
 	a_mOpenCLManager = MOpenCLManager::GetInstance();
+	a_mSDLManager = MSDLManager::GetInstance();
+	a_mRenderManager = MRenderManager::GetInstance();
 	a_mResourceManager = MResourceManager::GetInstance();
 	a_mComputationManager = MComputationManager::GetInstance();
+	
 }
 Main::~Main()
 {
@@ -35,14 +39,17 @@ void Main::ErrorShutDown(int iExitCode)
 int Main::Entry()
 {
 	if(a_bIsRunning) {
-		printf(LOG_COLOR_WARNING "-Log.Warning:Call to 'Entry' of Main, but entry already called before\n" LOG_COLOR_RESET);
-		return 1; 
+		printf(LOG_COLOR_WARNING "\n_WARNING: [Main.Entry] entry already called before." LOG_COLOR_RESET);
+		return 1;
 	}
 	a_bIsRunning = true;
 
 	a_mLogManager->SetUp();
 	a_mSettingsManager->SetUp();
+	a_mMemoryManager->SetUp();
 	a_mOpenCLManager->SetUp();
+	a_mSDLManager->SetUp();
+	a_mRenderManager->SetUp();
 	a_mResourceManager->SetUp();
 	a_mComputationManager->SetUp();
 	
@@ -57,7 +64,10 @@ void Main::Fx_ShutDown()
 {
 	a_mComputationManager->ShutDown();
 	a_mResourceManager->ShutDown();
+	a_mRenderManager->ShutDown();
+	a_mSDLManager->ShutDown();
 	a_mOpenCLManager->ShutDown();
+	a_mMemoryManager->ShutDown();
 	a_mSettingsManager->ShutDown();
 	a_mLogManager->ShutDown();
 

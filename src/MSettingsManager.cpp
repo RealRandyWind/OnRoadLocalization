@@ -6,6 +6,8 @@ MSettingsManager::MSettingsManager()
 {
 	a_bIsShutDown = false;
 	a_bIsSetUp = false;
+
+	a_mLogManager = MLogManager::GetInstance();
 }
 
 MSettingsManager::~MSettingsManager()
@@ -23,6 +25,7 @@ MSettingsManager* MSettingsManager::GetInstance()
 void MSettingsManager::SetUp()
 {
 	if(a_bIsSetUp) {
+		a_mLogManager->Warning(0, "[MSettingsManager.SetUp] already setup.");
 		return; 
 	}
 	a_bIsShutDown = false;
@@ -30,11 +33,13 @@ void MSettingsManager::SetUp()
 	// TODO MSettingsManager SetUp
 
 	a_bIsSetUp = true;
+	a_mLogManager->Success(0, "[MSettingsManager.SetUp] done.");
 }
 
 void MSettingsManager::ShutDown()
 {
 	if(a_bIsShutDown) {
+		a_mLogManager->Warning(0, "[MSettingsManager.ShutDown] already shutdown.");
 		return; 
 	}
 	a_bIsSetUp = false;
@@ -42,6 +47,7 @@ void MSettingsManager::ShutDown()
 	// TODO MSettingsManager ShutDown
 
 	a_bIsShutDown = true;
+	a_mLogManager->Success(0, "[MSettingsManager.ShutDown] done.");
 }
 
 unsigned int MSettingsManager::LoadSettingsFromFile(std::string sPath)

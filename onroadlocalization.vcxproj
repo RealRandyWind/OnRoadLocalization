@@ -99,11 +99,12 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>opengl32.lib;SDL2main.lib;SDL2.lib;avcodec.lib;avformat.lib;avutil.lib;OpenCL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;SDL2main.lib;SDL2.lib;avcodec.lib;avformat.lib;avutil.lib;swscale.lib;OpenCL.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CUDA_PATH)\lib\$(Platform)\;$(SolutionDir)deps\$(Platform)\SDL2\lib\;$(SolutionDir)deps\$(Platform)\ffmpeg\lib\;$(SolutionDir)libs\$(Platform)\ffmpeg\bin\</AdditionalLibraryDirectories>
       <OutputFile>$(IntDir)$(TargetName)$(TargetExt)</OutputFile>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <ProjectReference>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
@@ -123,11 +124,12 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>opengl32.lib;SDL2main.lib;SDL2.lib;avcodec.lib;avformat.lib;avutil.lib;OpenCL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;SDL2main.lib;SDL2.lib;avcodec.lib;avformat.lib;avutil.lib;swscale.lib;OpenCL.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CUDA_PATH)\lib\$(Platform)\;$(SolutionDir)deps\$(Platform)\SDL2\lib\;$(SolutionDir)deps\$(Platform)\ffmpeg\lib\;$(SolutionDir)libs\$(Platform)\ffmpeg\bin\</AdditionalLibraryDirectories>
       <OutputFile>$(IntDir)$(TargetName)$(TargetExt)</OutputFile>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
     <ProjectReference>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
@@ -166,12 +168,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\CMonoscopic.cpp" />
+    <ClCompile Include="src\DDMovie.cpp" />
     <ClCompile Include="src\entry.cpp" />
+    <ClCompile Include="src\FVMonoscopic.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MComputationManager.cpp" />
     <ClCompile Include="src\MLogManager.cpp" />
+    <ClCompile Include="src\MMemoryManager.cpp" />
     <ClCompile Include="src\MOpenCLManager.cpp" />
+    <ClCompile Include="src\MRenderManager.cpp" />
     <ClCompile Include="src\MResourceManager.cpp" />
+    <ClCompile Include="src\MSDLManager.cpp" />
     <ClCompile Include="src\MSettingsManager.cpp" />
     <ClCompile Include="src\OpenCLArgument.cpp" />
     <ClCompile Include="src\OpenCLProgram.cpp" />
@@ -179,12 +186,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CMonoscopic.hpp" />
+    <ClInclude Include="src\DDMovie.hpp" />
+    <ClInclude Include="src\FVMonoscopic.hpp" />
     <ClInclude Include="src\IComputation.hpp" />
+    <ClInclude Include="src\IDataDescriptor.hpp" />
+    <ClInclude Include="src\IFeatureVector.hpp" />
     <ClInclude Include="src\Main.hpp" />
     <ClInclude Include="src\MComputationManager.hpp" />
     <ClInclude Include="src\MLogManager.hpp" />
+    <ClInclude Include="src\MMemoryManager.hpp" />
     <ClInclude Include="src\MOpenCLManager.hpp" />
+    <ClInclude Include="src\MRenderManager.hpp" />
     <ClInclude Include="src\MResourceManager.hpp" />
+    <ClInclude Include="src\MSDLManager.hpp" />
     <ClInclude Include="src\MSettingsManager.hpp" />
     <ClInclude Include="src\OpenCLArgument.hpp" />
     <ClInclude Include="src\OpenCLProgram.hpp" />

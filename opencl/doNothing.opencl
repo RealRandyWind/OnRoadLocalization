@@ -1,4 +1,4 @@
-__kernel void main()
+__kernel void entry()
 {
 	/*DO NOTHING*/
 }

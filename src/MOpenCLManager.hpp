@@ -51,6 +51,7 @@ private:
 	void Fx_LoadArguments();
 	void Fx_DestroyArgument(OpenCLArgument* oArgument);
 	void Fx_EnqueueTask();
+	static char* Fx_MapErrorCode(unsigned int iErrorCode);
 public:
 	~MOpenCLManager();
 	static MOpenCLManager* GetInstance();
@@ -62,7 +63,7 @@ public:
 	unsigned int LoadProgramFromFile(std::string sPath, std::string sFunction, unsigned int iArgumentCount);
 	unsigned int LoadProgramFromString(std::string sSource, std::string sFunction, unsigned int iArgumentCount);
 
-	void SetArgument(unsigned int iArgument, void* ptrValue, size_t iSize, bool bIsRaw=false, bool bIsNull=false, unsigned int eType=OPENCL_MEM_DEFAULT);
+	void SetArgument(unsigned int iArgument, void* ptrValue, unsigned int iSize, bool bIsRaw=false, bool bIsNull=false, unsigned int eType=OPENCL_MEM_DEFAULT);
 	void SetChuncksTo(unsigned int iDimensions, size_t* aiOffset, size_t* aiGlobalRange, size_t* aiLocalRange);
 
 	void Use(unsigned int iProgram);

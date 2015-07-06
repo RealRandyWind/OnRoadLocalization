@@ -261,7 +261,7 @@ float4 trace(Ray *oSourceRay, Scene *oScene, uint iMaxRecursionDepth)
 }
 
 /* ENTRY POINT*/
-__kernel void main(
+__kernel void entry(
 	__global write_only float4* pPixel, 
 	__global read_only Camera* oCamera, 
 	__global read_only Object* aObjects, uint nObjects, 

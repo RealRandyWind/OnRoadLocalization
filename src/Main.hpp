@@ -1,8 +1,11 @@
 #ifndef MAIN_HPP
 #define MAIN_HPP
+#include "MSDLManager.hpp"
 #include "MOpenCLManager.hpp"
 #include "MComputationManager.hpp"
 #include "MResourceManager.hpp"
+#include "MRenderManager.hpp"
+#include "MMemoryManager.hpp"
 #include "MSettingsManager.hpp"
 #include "MLogManager.hpp"
 
@@ -17,9 +20,12 @@ private:
 
 	MLogManager* a_mLogManager;
 	MSettingsManager* a_mSettingsManager;
+	MMemoryManager* a_mMemoryManager;
 	MOpenCLManager* a_mOpenCLManager;
-	MComputationManager* a_mComputationManager;
+	MSDLManager* a_mSDLManager;
+	MRenderManager* a_mRenderManager;
 	MResourceManager* a_mResourceManager;
+	MComputationManager* a_mComputationManager;
 	
 	void Fx_ShutDown();
 public:

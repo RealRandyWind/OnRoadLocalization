@@ -9,62 +9,89 @@ typedef struct _struct_featurvector FeatureVector;
 
 struct _struct_datadescriptormovie 
 {
-	uint iFrameFrom, iFrameTo, iWidth, iHeigth;
-	float dFps, dMax, dMin, dEpsilon;
+	uint iWidth, iHeigth, iPitch, iFrame, iFrames, iSize;
+	float dFps, dNorm;
 };
-
 
 /* maybe float8 works better computational wise. color 
 is already stored in the lpData set. */
 struct _struct_featurvector
 {
-	float2 vPosition, vVelocity, vNormal;
-}
+	float4 vChange, vGradient;
+	float2 vPosition, vVelocity;
+	float dLifetime, dDeviation;
+};
 
-
+/* LOCAL THREAD VARIABLE */
+__constant float EPS = 1e-2;
 
 /*FUNCTIONS*/
 
 FeatureVector extractFeatures(
-	__global read_only float4* lpData,
+	__global read_only uchar4* lpData,
 	__global read_only DataDescriptorMovie* oDescriptor,
+	__global read_only uint* liFrameMap,
 	uint iPixel)
 {
 	FeatureVector oFeatureVector;
 
-	/* extract position */
-	oFeatureVector.vPosition.x = (float)(iThread % oDescriptor.iWidth);
-	oFeatureVector.vPosition.y = (float)(iThread / oDescriptor.iWidth);
+	uint iWidth = oDescriptor->iWidth;
+	uint iHeigth = oDescriptor->iHeigth;
+	uint iFrame = oDescriptor->iFrame;
+	uint iFrames = oDescriptor->iFrames;
+	uint iIndexFrame = liFrameMap[iFrame];
 
+	float4 pPixel =  convert_float4(lpData[iIndexFrame + iPixel]);
+
+	/* extract position in 2d space */
+	oFeatureVector.vPosition.x = (float)(iPixel % iWidth);
+	oFeatureVector.vPosition.y = (float)(iPixel / iWidth);
+
+	/* extract change in time duplicate on edge*/
+	oFeatureVector.vChange = (
+		( iFrames - iFrame ? convert_float4(lpData[iIndexFrame + 1 + iPixel]) : pPixel )
+		- ( iFrame ? convert_float4(lpData[iIndexFrame - 1 + iPixel]) : pPixel )
+	);
+
+	/* extract velocity in 2d space */
 	oFeatureVector.vVelocity.x = 0.0;
 	oFeatureVector.vVelocity.y = 0.0;
 
-	oFeatureVector.vNormal.x = 0.0;
-	oFeatureVector.vNormal.y = 0.0;
-	
+	/*
+	while(uint k=0; k<iFrames; ++k) {
+		iIndexFrame = liFrameMap[k];
+		uint i=0;
+		uint j=0;
+		while(uint i=0; i<iWidth; ++i)
+		{
+			while(uint j=0; j<iHeigth; ++j)
+			{
+				uint iIndex = j * iWidth + j;
+			}
+		} 
+	}
+	*/
 
-	oFeatureVector.dLifetime = oPredecessor;
-	oFeatureVector.dDeviation = extractDeviation();
+	oFeatureVector.dLifetime = 0.0;
+	oFeatureVector.dDeviation = 0.0;
 
 	return oFeatureVector;
 }
 
-
-
 /*PROGRAM ENTRY*/
 
-__kernel void main(
-	__global read_only float4* lpData,
+__kernel void entry(
+	__global read_only uchar4* lpData,
 	__global write_only float* ldResults,
 	__global FeatureVector* loFeatures,
 	__global read_only DataDescriptorMovie* oDescriptor,
-	uint iFrameCurrent)
+	__global read_only uint* liFrameMap)
 {
-	/* for now each thread processes one pixel in the current frame*/
+	/* each thread processes one pixel in the current frame*/
 
-	/* determine thread id */ 	
+	/* determine thread id */
 	size_t iThread = get_global_id(0);
 
 	/* extracting freatures from frame per pixel*/
-	loFeatures[iThread] = extractFeatures(lpData,iThread);
+	/*loFeatures[iThread] = extractFeatures(lpData, oDescriptor, liFrameMap, iPixel);*/
 }

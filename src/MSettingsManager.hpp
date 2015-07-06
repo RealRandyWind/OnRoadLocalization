@@ -1,5 +1,6 @@
 #ifndef MSETTINGSMANAGER_HPP
 #define MSETTINGSMANAGER_HPP
+#include "MLogManager.hpp"
 #include <string>
 
 class MSettingsManager;
@@ -9,7 +10,9 @@ private:
 	MSettingsManager();
 	static MSettingsManager* a_oInstance;
 	bool a_bIsSetUp;
-	bool a_bIsShutDown; 
+	bool a_bIsShutDown;
+
+	MLogManager* a_mLogManager;
 public:
 	~MSettingsManager();
 	static MSettingsManager* GetInstance();

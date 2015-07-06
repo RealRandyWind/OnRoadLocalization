@@ -7,6 +7,8 @@ MComputationManager::MComputationManager()
 {
 	a_bIsShutDown = false;
 	a_bIsSetUp = false;
+
+	a_mLogManager = MLogManager::GetInstance();
 }
 
 MComputationManager::~MComputationManager()
@@ -24,18 +26,21 @@ MComputationManager* MComputationManager::GetInstance()
 void MComputationManager::SetUp()
 {
 	if(a_bIsSetUp) {
-		return; 
+		a_mLogManager->Warning(0,"[MComputationManager.SetUp] already setup.");
+		return;
 	}
 	a_bIsShutDown = false;
 
 	// TODO MComputationManager SetUp
 
 	a_bIsSetUp = true;
+	a_mLogManager->Success(0,"[MComputationManager.SetUp] done.");
 }
 
 void MComputationManager::ShutDown()
 {
 	if(a_bIsShutDown) {
+		a_mLogManager->Warning(0,"[MComputationManager.ShutDown] already shutdown.");
 		return; 
 	}
 	a_bIsSetUp = false;
@@ -43,6 +48,7 @@ void MComputationManager::ShutDown()
 	// TODO MComputationManager ShutDown
 
 	a_bIsShutDown = true;
+	a_mLogManager->Success(0,"[MComputationManager.ShutDown] done.");
 }
 
 void MComputationManager::Run()

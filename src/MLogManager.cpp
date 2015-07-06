@@ -31,7 +31,7 @@ MLogManager* MLogManager::GetInstance()
 void MLogManager::SetUp()
 {
 	if(a_bIsSetUp) {
-		Log("Call to 'SetUp' of MLogManager, but setup already",0,LOG_WARNING);
+		Warning(0,"[MLogmanager.SetUp] already setup.");
 		return; 
 	}
 	a_bIsShutDown = false;
@@ -39,13 +39,13 @@ void MLogManager::SetUp()
 	// TODO MLogManager setup
 
 	a_bIsSetUp = true;
-	Log("SetUp MLogManager is done",0,LOG_SUCCESS);
+	Success(0,"[MLogmanager.SetUp] done.");
 }
 
 void MLogManager::ShutDown()
 {
 	if(a_bIsShutDown) {
-		printf(LOG_COLOR_WARNING "-Log.Warning:Call to 'ShutDown' of MLogManager, but shutdown already" LOG_COLOR_RESET);
+		printf(LOG_COLOR_WARNING "_Warning: [MLogManager.ShutDown] already shutdown.\n" LOG_COLOR_RESET);
 		return; 
 	}
 	a_bIsSetUp = false;
@@ -61,7 +61,7 @@ void MLogManager::ShutDown()
 	// TODO MLogManager shutdown
 
 	a_bIsShutDown = true;
-	printf(LOG_COLOR_SUCCESS "-Log.Success:ShutDown MLogManager is done\n" LOG_COLOR_RESET);
+	printf(LOG_COLOR_SUCCESS "_Success: [MLogManager.ShutDown] done.\n" LOG_COLOR_RESET);
 }
 
 
@@ -72,12 +72,13 @@ void MLogManager::SetLogFile(std::string sFilePath)
 
 void MLogManager::SetLogFile(std::string sFilePath, unsigned int eType)
 {
-
-	if(LOG_ERROR & eType) { Fx_SetLogFile(sFilePath,0); }
-	if(LOG_SUCCESS & eType) { Fx_SetLogFile(sFilePath,1); }
-	if(LOG_INFO & eType) { Fx_SetLogFile(sFilePath,2); }
-	if(LOG_WARNING & eType) { Fx_SetLogFile(sFilePath,3); }
-	if(LOG_DEBUG & eType) { Fx_SetLogFile(sFilePath,4); }
+	if(LOG_ERROR & eType) { Fx_SetLogFile(sFilePath, LOG_TYPEID_ERROR); }
+	if(LOG_SUCCESS & eType) { Fx_SetLogFile(sFilePath, LOG_TYPEID_SUCCESS); }
+	if(LOG_INFO & eType) { Fx_SetLogFile(sFilePath, LOG_TYPEID_INFO); }
+	if(LOG_WARNING & eType) { Fx_SetLogFile(sFilePath, LOG_TYPEID_WARNING); }
+	if(LOG_DEBUG & eType) { Fx_SetLogFile(sFilePath, LOG_TYPEID_DEBUG); }
+	if(LOG_LOG & eType) { Fx_SetLogFile(sFilePath, LOG_TYPEID_LOG); }
+	if(LOG_TEST & eType) { Fx_SetLogFile(sFilePath, LOG_TYPEID_TEST); }
 }
 
 void MLogManager::Fx_SetLogFile(std::string sFilePath, unsigned int iFile)
@@ -93,177 +94,162 @@ void MLogManager::Fx_WriteLog(std::string sString, unsigned int iFile)
 	if(!(a_iLogCounter % LOG_FILE_FLUSHRATE)) { a_lFileStreames[iFile].flush(); }
 }
 
-void MLogManager::Fx_PrintLog(std::string sString)
+void MLogManager::Fx_PrintLog(std::string sString, unsigned int iType)
 {
-	sString += LOG_COLOR_RESET;
-	printf("%s\n",sString.c_str());
-}
+	std::string sTypeColor = LOG_COLOR_RESET;
 
-void MLogManager::Fx_EvaluateLog(std::string sLog, unsigned int iCode, unsigned int eType)
-{
-	if(a_bIsShutDown) {
-		printf(LOG_COLOR_WARNING "-Log.Warning:Call to Log of MLogManager while allready shutdown\n" LOG_COLOR_RESET);
-		return; 
-	}
-
-	if(!(LOG_ANY & eType)) { Log("Invalid enum type on evaluation",0,LOG_WARNING); return; }
-	std::string sString;
-	++a_iLogCounter;
-	
-	std::string sPrefix = LOG_LOG_STR;
-	if(iCode) { sPrefix +="Code[" + std::to_string(iCode) + "]."; }
-	
-	if(LOG_SUCCESS & eType) {
-		sString = sPrefix + LOG_SUCCESS_STR + sLog;
-		Fx_WriteLog(sString,1);
-		if(a_sTypeIsPrint[1]) { Fx_PrintLog(LOG_COLOR_SUCCESS + sString); }
-	}
-	
-	if(LOG_INFO & eType) {
-		sString = sPrefix + LOG_INFO_STR + sLog;
-		Fx_WriteLog(sString,2);
-		if(a_sTypeIsPrint[2]) { Fx_PrintLog(LOG_COLOR_INFO + sString); }
-	}
-	
-	if(LOG_WARNING & eType) {
-		sString = sPrefix + LOG_WARNING_STR + sLog;
-		Fx_WriteLog(sString,3);
-		if(a_sTypeIsPrint[3]) { Fx_PrintLog(LOG_COLOR_WARNING + sString); }
-
-#ifdef __linux__
-		if(LOG_WARNING_USLEEP_TIME){
-			if(usleep(LOG_WARNING_USLEEP_TIME)<0) { 
-				Log("Usleep not working or canceled, consider to define LOG_WARNING_USLEEP_TIME to zero.",0,LOG_ERROR);
-			}
-		}
-#endif
-	}
-	
-	if(LOG_DEBUG & eType) {
-		sString = "  " + sPrefix + LOG_DEBUG_STR + sLog;
-		Fx_WriteLog(sString,4);
-		if(a_sTypeIsPrint[4]) { Fx_PrintLog(LOG_COLOR_DEBUG + sString); }
+	switch (iType) {
+		case LOG_TYPEID_ERROR: sTypeColor = LOG_COLOR_LOG; break;
+		case LOG_TYPEID_SUCCESS: sTypeColor = LOG_COLOR_SUCCESS; break;
+		case LOG_TYPEID_INFO: sTypeColor = LOG_COLOR_INFO; break;
+		case LOG_TYPEID_WARNING: sTypeColor = LOG_COLOR_WARNING; break;
+		case LOG_TYPEID_DEBUG: sTypeColor = LOG_COLOR_DEBUG; break;
+		case LOG_TYPEID_LOG: sTypeColor = LOG_COLOR_LOG; break;
+		case LOG_TYPEID_TEST: sTypeColor = LOG_COLOR_TEST; break;
 	}
 
-	if(LOG_ERROR & eType) {
-		sString = sPrefix + LOG_ERROR_STR + sLog;
-		Fx_WriteLog(sString,0);
-		if(a_sTypeIsPrint[0]) { Fx_PrintLog(LOG_COLOR_ERROR + sString); }
-		Main::ErrorShutDown();
-	}
+	printf("%s%s\n" LOG_COLOR_RESET, sTypeColor.c_str(), sString.c_str());
 }
 
 bool MLogManager::IsPrint(unsigned int eType)
 {	
 	bool bAllIsPrint = true;
 	
-	if(LOG_ERROR & eType) { bAllIsPrint &= a_sTypeIsPrint[0]; }
-	if(LOG_SUCCESS & eType) { bAllIsPrint &= a_sTypeIsPrint[1]; }
-	if(LOG_INFO & eType) { bAllIsPrint &= a_sTypeIsPrint[2]; }
-	if(LOG_WARNING & eType) { bAllIsPrint &= a_sTypeIsPrint[3]; }
-	if(LOG_DEBUG & eType) { bAllIsPrint &= a_sTypeIsPrint[4]; }
+	if(LOG_ERROR & eType) { bAllIsPrint &= a_sTypeIsPrint[LOG_TYPEID_ERROR]; }
+	if(LOG_SUCCESS & eType) { bAllIsPrint &= a_sTypeIsPrint[LOG_TYPEID_SUCCESS]; }
+	if(LOG_INFO & eType) { bAllIsPrint &= a_sTypeIsPrint[LOG_TYPEID_INFO]; }
+	if(LOG_WARNING & eType) { bAllIsPrint &= a_sTypeIsPrint[LOG_TYPEID_WARNING]; }
+	if(LOG_DEBUG & eType) { bAllIsPrint &= a_sTypeIsPrint[LOG_TYPEID_DEBUG]; }
+	if(LOG_LOG & eType) { bAllIsPrint &= a_sTypeIsPrint[LOG_TYPEID_LOG]; }
+	if(LOG_TEST & eType) { bAllIsPrint &= a_sTypeIsPrint[LOG_TYPEID_TEST]; }
 	
 	return bAllIsPrint;
 }
 
 bool MLogManager::IsPrint(bool bIsPrint, unsigned int eType)
 {
-	if(LOG_ERROR & eType) { a_sTypeIsPrint[0] = bIsPrint;}
-	if(LOG_SUCCESS & eType) { a_sTypeIsPrint[1] = bIsPrint; }
-	if(LOG_INFO & eType) { a_sTypeIsPrint[2] = bIsPrint; }
-	if(LOG_WARNING & eType) { a_sTypeIsPrint[3] = bIsPrint; }
-	if(LOG_DEBUG & eType) { a_sTypeIsPrint[4] = bIsPrint; }
+	if(LOG_ERROR & eType) { a_sTypeIsPrint[LOG_TYPEID_ERROR] = bIsPrint;}
+	if(LOG_SUCCESS & eType) { a_sTypeIsPrint[LOG_TYPEID_SUCCESS] = bIsPrint; }
+	if(LOG_INFO & eType) { a_sTypeIsPrint[LOG_TYPEID_INFO] = bIsPrint; }
+	if(LOG_WARNING & eType) { a_sTypeIsPrint[LOG_TYPEID_WARNING] = bIsPrint; }
+	if(LOG_DEBUG & eType) { a_sTypeIsPrint[LOG_TYPEID_DEBUG] = bIsPrint; }
+	if(LOG_LOG & eType) { a_sTypeIsPrint[LOG_TYPEID_LOG] = bIsPrint; }
+	if(LOG_TEST & eType) { a_sTypeIsPrint[LOG_TYPEID_TEST] = bIsPrint; }
 
 	return bIsPrint;
 }
 	
 
 /* Log Functions */
-void MLogManager::LogF(unsigned int eType, unsigned int iCode, const char* sFormat, ...)
+void MLogManager::Log(unsigned int iCode, const char* sFormat, ...)
 {
 	char sBuffer[LOG_2048_LENGTH];
 	va_list vaArgs;
 	va_start(vaArgs, sFormat);
-	vsprintf(sBuffer,sFormat, vaArgs);
+	vsprintf_s(sBuffer,sFormat, vaArgs);
 	va_end(vaArgs);
-	Log(std::string(sBuffer),iCode,eType);
+
+	Fx_Log(LOG_TYPEID_LOG, iCode, LOG_LOG_STR, sBuffer);
 }
 
-void MLogManager::Log(std::string sMessege)
+void MLogManager::Info(unsigned int iCode, const char* sFormat, ...)
 {
-	Log(sMessege,0,LOG_DEFAULT);
+	char sBuffer[LOG_2048_LENGTH];
+	va_list vaArgs;
+	va_start(vaArgs, sFormat);
+	vsprintf_s(sBuffer, sFormat, vaArgs);
+	va_end(vaArgs);
+
+	Fx_Log(LOG_TYPEID_INFO, iCode, LOG_INFO_STR, sBuffer);
 }
 
-void MLogManager::Log(std::string sMessege, unsigned int iCode)
+void MLogManager::Success(unsigned int iCode, const char* sFormat, ...)
 {
-	Log(sMessege,iCode,LOG_DEFAULT);
+	char sBuffer[LOG_2048_LENGTH];
+	va_list vaArgs;
+	va_start(vaArgs, sFormat);
+	vsprintf_s(sBuffer, sFormat, vaArgs);
+	va_end(vaArgs);
+
+	Fx_Log(LOG_TYPEID_SUCCESS, iCode, LOG_SUCCESS_STR, sBuffer);
 }
 
-void MLogManager::Log(std::string sMessege, unsigned int iCode, unsigned int eType)
+void MLogManager::Warning(unsigned int iCode, const char* sFormat, ...)
 {
-	Fx_EvaluateLog(sMessege,iCode,eType);
+	char sBuffer[LOG_2048_LENGTH];
+	va_list vaArgs;
+	va_start(vaArgs, sFormat);
+	vsprintf_s(sBuffer, sFormat, vaArgs);
+	va_end(vaArgs);
+
+	Fx_Log(LOG_TYPEID_WARNING, iCode, LOG_WARNING_STR, sBuffer);
 }
 
-
-void MLogManager::Log(std::string sMessege, std::string sString, unsigned int iCode, unsigned int eType)
+void MLogManager::Error(unsigned int iCode, const char* sFormat, ...)
 {
-	std::string sLog = sMessege + ": s(\"" + sString + "\")";
-	Fx_EvaluateLog(sLog,iCode,eType);
+	char sBuffer[LOG_2048_LENGTH];
+	va_list vaArgs;
+	va_start(vaArgs, sFormat);
+	vsprintf_s(sBuffer, sFormat, vaArgs);
+	va_end(vaArgs);
+
+	Fx_Log(LOG_TYPEID_ERROR, iCode, LOG_ERROR_STR, sBuffer);
+
+	Main::ErrorShutDown();
 }
 
-void MLogManager::Log(std::string sMessege, char* sString, unsigned int iCode, unsigned int eType)
+void MLogManager::Debug(unsigned int iCode, const char* sFormat, ...)
 {
-	std::string sValue = std::string(sString);
-	std::string sLog = sMessege + ": s(\"" + sValue + "\")";
-	Fx_EvaluateLog(sLog,iCode,eType);
+	char sBuffer[LOG_2048_LENGTH];
+	va_list vaArgs;
+	va_start(vaArgs, sFormat);
+	vsprintf_s(sBuffer, sFormat, vaArgs);
+	va_end(vaArgs);
+
+	Fx_Log(LOG_TYPEID_DEBUG, iCode, LOG_DEBUG_STR, sBuffer);
 }
 
-void MLogManager::Log(std::string sMessege, char cChar, unsigned int iCode, unsigned int eType)
+void MLogManager::Test(unsigned int iCode, const char* sFormat, ...)
 {
-	std::string sValue = std::string(1,cChar);
-	std::string sLog = sMessege + ": c('" + sValue + "')";
-	Fx_EvaluateLog(sLog,iCode,eType) ;
+	char sBuffer[LOG_2048_LENGTH];
+	va_list vaArgs;
+	va_start(vaArgs, sFormat);
+	vsprintf_s(sBuffer, sFormat, vaArgs);
+	va_end(vaArgs);
+
+	Fx_Log(LOG_TYPEID_TEST, iCode, LOG_TEST_STR, sBuffer);
 }
 
-void MLogManager::Log(std::string sMessege, unsigned char cChar, unsigned int iCode, unsigned int eType)
+void MLogManager::Any(unsigned int eType, unsigned int iCode, const char* sFormat, ...)
 {
-	std::string sValue = std::string(1,cChar);
-	std::string sLog = sMessege + ": c('" + sValue + "')";
-	Fx_EvaluateLog(sLog,iCode,eType);
+	if(!(LOG_ANY & eType)) { Warning(0,"[MLogManager.Any] invalid enum type on evaluation."); return; }
+
+	char sBuffer[LOG_2048_LENGTH];
+	va_list vaArgs;
+	va_start(vaArgs, sFormat);
+	vsprintf_s(sBuffer, sFormat, vaArgs);
+	va_end(vaArgs);
+
+	if (LOG_ERROR & eType) { Fx_Log(LOG_TYPEID_ERROR, iCode, LOG_ERROR_STR, sBuffer); }
+	if (LOG_SUCCESS & eType) { Fx_Log(LOG_TYPEID_SUCCESS, iCode, LOG_SUCCESS_STR, sBuffer); }
+	if (LOG_INFO & eType) { Fx_Log(LOG_TYPEID_INFO, iCode, LOG_INFO_STR, sBuffer); }
+	if (LOG_WARNING & eType) { Fx_Log(LOG_TYPEID_WARNING, iCode, LOG_WARNING_STR, sBuffer); }
+	if (LOG_DEBUG & eType) { Fx_Log(LOG_TYPEID_DEBUG, iCode, LOG_DEBUG_STR, sBuffer); }
+	if (LOG_LOG & eType) { Fx_Log(LOG_TYPEID_LOG, iCode, LOG_LOG_STR, sBuffer); }
+	if (LOG_TEST & eType) { Fx_Log(LOG_TYPEID_TEST, iCode, LOG_TEST_STR, sBuffer); }
 }
 
-
-void MLogManager::Log(std::string sMessege, unsigned int iNumber, unsigned int iCode, unsigned int eType)
+void MLogManager::Fx_Log(unsigned int iType, unsigned int iCode, char sPrefix[], char sMessage[])
 {
-	std::string sValue = std::to_string(iNumber);
-	std::string sLog = sMessege + ": i(" + sValue + ")";
-	Fx_EvaluateLog(sLog,iCode,eType);
-}
+	if (a_bIsShutDown) {
+		printf(LOG_COLOR_WARNING "_Warning: [MLogManager.Fx_Log] allready shutdown.\n" LOG_COLOR_RESET);
+		return;
+	}
 
-void MLogManager::Log(std::string sMessege, int iNumber, unsigned int iCode, unsigned int eType)
-{
-	std::string sValue = std::to_string(iNumber);
-	std::string sLog = sMessege + ": i(" + sValue + ")";
-	Fx_EvaluateLog(sLog,iCode,eType);
-}
+	++a_iLogCounter;
 
-void MLogManager::Log(std::string sMessege, long iNumber, unsigned int iCode, unsigned int eType)
-{
-	std::string sValue = std::to_string(iNumber);
-	std::string sLog = sMessege + ": i(" + sValue + ")";
-	Fx_EvaluateLog(sLog,iCode,eType);
-}
-
-void MLogManager::Log(std::string sMessege, double dNumber, unsigned int iCode, unsigned int eType)
-{
-	std::string sValue = std::to_string(dNumber);
-	std::string sLog = sMessege + ": d(" + sValue + ")";
-	Fx_EvaluateLog(sLog,iCode,eType);
-}
-
-void MLogManager::Log(std::string sMessege, float dNumber, unsigned int iCode, unsigned int eType)
-{
-	std::string sValue = std::to_string(dNumber);
-	std::string sLog = sMessege + ": d(" + sValue + ")";
-	Fx_EvaluateLog(sLog,iCode,eType);
+	std::string sString = sPrefix + ( iCode ? "(" + std::to_string(iCode) + "): " : ": " ) + sMessage;
+	
+	Fx_WriteLog(sString, iType);
+	if (a_sTypeIsPrint[iType]) { Fx_PrintLog(sString,iType);}
 }

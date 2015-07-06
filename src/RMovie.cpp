@@ -1,108 +1,130 @@
 #include "RMovie.hpp"
-#include "MLogManager.hpp"
 
 RMovie::RMovie(std::string sPath)
 {
-	iSize = -1;
-	a_pData = RMovie::Fx_LoadMovie(sPath);
+	a_mLogManager = MLogManager::GetInstance();
+	a_mMemoryManager = MMemoryManager::GetInstance();
+
+	a_oFContext = NULL;
+	a_oCContext = NULL;
+	a_oCodec = NULL;
+	a_oSContext = NULL;
+	a_oFrame = av_frame_alloc();;
+
+	a_oDescriptor = NULL;
+	
+	a_iSize = -1;
+	a_iStreamIndex = -1;
+	a_iFrameFinished = 0;
+	
+	RMovie::Fx_LoadMovie(sPath);
 }
 
 RMovie::~RMovie()
 {
+	if (a_iFrameFinished) { av_free_packet(&a_sPacket); }
 
+	if (a_oFrame) {
+		av_free(a_oFrame);
+	}
+
+	if (a_oSContext) {
+		sws_freeContext(a_oSContext);
+	}
+	
+	if (a_oCContext) {
+		avcodec_close(a_oCContext);
+	}
+
+	if (a_oFContext) {
+		avformat_close_input(&a_oFContext);
+	}
 }
 
-void* RMovie::Fx_LoadMovie(std::string sPath)
-{
-	MLogManager* mLogManager = MLogManager::GetInstance();
-	
+void RMovie::Fx_LoadMovie(std::string sPath)
+{	
 	av_register_all();
+
+	if (avformat_open_input(&a_oFContext, sPath.c_str(), NULL, NULL) < 0) {
+		a_mLogManager->Warning(0, "[RMovie.Fx_LoadMovie] could not open file \"%s\".", sPath.c_str());
+		return;
+	}
+
+	if (avformat_find_stream_info(a_oFContext, NULL) < 0) {
+		a_mLogManager->Warning(0, "[RMovie.Fx_LoadMovie] could not find stream information at url \"%s\".", sPath.c_str());
+		return;
+	}
+
+	if (a_iStreamIndex = av_find_best_stream(a_oFContext, AVMEDIA_TYPE_VIDEO, -1, -1, &a_oCodec, 0) < 0) {
+		a_mLogManager->Warning(0, "[RMovie.Fx_LoadMovie] could not find a video stream from url/file \"%s\".", sPath.c_str());
+		return;
+	}
+	a_oCContext = a_oFContext->streams[a_iStreamIndex]->codec;
+	av_opt_set_int(a_oCContext, "refcounted_frames", 1, 0);
+
+	if (avcodec_open2(a_oCContext, a_oCodec, NULL) < 0) {
+		a_mLogManager->Warning(0, "[RMovie.Fx_LoadMovie] could not open video decoder for movie \"%s\".");
+		return;
+	}
+
+	a_oDescriptor = new DDMovie(a_oCContext->width, a_oCContext->height, 0, 0, 0, (float)av_q2d(a_oCContext->framerate), 255.0);
+
+	/* PIX_FMT_BGRA PIX_FMT_BGR444 PIX_FMT_RGB444*/
+	a_oSContext = sws_getContext(a_oCContext->width, a_oCContext->height, a_oCContext->pix_fmt, a_oCContext->width, a_oCContext->height, PIX_FMT_RGBA, SWS_FAST_BILINEAR, NULL, NULL, NULL);
 	
-	int iStreamIndex = -1;
-	AVFormatContext *oFContext = NULL;
-	AVCodecContext *oCContext = NULL;
-	AVCodec *oCodec = NULL;
-
-	if (avformat_open_input(&oFContext, sPath.c_str(), NULL, NULL) < 0) {
-		mLogManager->LogF(LOG_ERROR, 0, "RMovie could not open file \"%s\"", sPath.c_str());
-		return NULL;
-	}
-
-	if (avformat_find_stream_info(oFContext, NULL) < 0) {
-		mLogManager->LogF(LOG_ERROR, 0, "RMovie could not find stream information at url \"%s\"", sPath.c_str());
-		return NULL;
-	}
-
-	if (iStreamIndex = av_find_best_stream(oFContext, AVMEDIA_TYPE_VIDEO, -1, -1, &oCodec, 0) < 0) {
-		mLogManager->LogF(LOG_ERROR, 0, "RMovie could not find a video stream from url/file \"%s\"", sPath.c_str());
-		return NULL;
-	}
-	oCContext = oFContext->streams[iStreamIndex]->codec;
-	av_opt_set_int(oCContext, "refcounted_frames", 1, 0);
-
-	_ASSERTE(oCodec != NULL);
-
-	if (avcodec_open2(oCContext, oCodec, NULL) < 0) {
-		mLogManager->LogF(LOG_ERROR, 0, "RMovie could not open video decoder");
-		return NULL;
-	}
-
-	mLogManager->LogF(LOG_SUCCESS, 0, "RMovie \"%s\" loaded", sPath.c_str());
-	
-	// TODO different place
-	Fx_NextFrame(oFContext, oCContext, iStreamIndex);
-
-	avcodec_close(oCContext);
-	avformat_close_input(&oFContext);
-
-	return NULL;
+	a_mLogManager->Success(0, "[RMovie.Fx_LoadMovie] \"%s\" loaded.", sPath.c_str());
 }
 
-void* RMovie::Fx_NextFrame(AVFormatContext* oFContext, AVCodecContext* oCContext, int iStreamIndex)
+uint8_t* RMovie::Fx_NextFrame(uint8_t* oDestination)
 {
-	MLogManager* mLogManager = MLogManager::GetInstance();
+	if(a_iFrameFinished) { av_free_packet(&a_sPacket);  }
 
-	int iFrameFinished = 0;
-	int nFrames = 0;
-	uint8_t* aBuffer = NULL;
-	AVPacket oPacket;
-	AVFrame* oFrame = av_frame_alloc();
-
-	while (av_read_frame(oFContext, &oPacket) >= 0) {
-
-		if (oPacket.stream_index == iStreamIndex) {
-			if (avcodec_decode_video2(oCContext, oFrame, &iFrameFinished, &oPacket) < 0) {
-				mLogManager->LogF(LOG_ERROR, 0, "RMovie could not decode frame");
+	while (av_read_frame(a_oFContext, &a_sPacket) >= 0) {
+		if (a_sPacket.stream_index == a_iStreamIndex) {
+			
+			if (avcodec_decode_video2(a_oCContext, a_oFrame, &a_iFrameFinished, &a_sPacket) < 0) {
+				a_mLogManager->Warning(0, "[RMovie.Fx_NextFrame] could not decode frame.");
+				return NULL;
 			}
-			++nFrames;
+
+			if (!a_iFrameFinished) { continue; }
+
+			a_oDescriptor->a_iFrame = a_oCContext->frame_number;
+			a_oDescriptor->a_iFrames = a_oDescriptor->a_iFrame;
+			a_oDescriptor->a_iPitch = a_oFrame->linesize[0];
+			a_oDescriptor->a_iWidth = a_oFrame->width;
+			a_oDescriptor->a_iHeight = a_oFrame->height;
+
+			int iPitch = a_oDescriptor->a_iWidth * 4;
+			unsigned int iSize = iPitch * a_oDescriptor->a_iHeight * sizeof(float);
+			uint8_t* oMemory = (oDestination ? oDestination : (uint8_t*)a_mMemoryManager->Allocate(iSize));
+
+			sws_scale(a_oSContext, (uint8_t const * const *)a_oFrame->data, a_oFrame->linesize, 0, a_oCContext->height, &oMemory, &iPitch);
+
+			return oMemory;
 		}
 
-		av_free_packet(&oPacket);
+		av_free_packet(&a_sPacket);
 	}
-	
-	av_free(oFrame);
-
-	mLogManager->LogF(LOG_INFO, 0, "RMovie read %i frames",nFrames);
 
 	return NULL;
 }
 
-void* RMovie::GetData()
+uint8_t* RMovie::GetData(uint8_t* oDestination)
 {
-	return a_pData;
+	return Fx_NextFrame(oDestination);
 }
 
-void* RMovie::GetData(void* pAt, unsigned int iCount)
+void RMovie::Display(void** oDestination, int iPitch)
 {
-	return NULL;
+	if (!oDestination) {
+		return;
+	}
+
+	sws_scale(a_oSContext, (uint8_t const * const *)a_oFrame->data, a_oFrame->linesize, 0, a_oCContext->height,(uint8_t**)oDestination, &iPitch);
 }
 
-void* RMovie::GetRangeData(void* pFrom, void* pTo, unsigned int iCount)
+IDataDescriptor* RMovie::GetDataDescriptor()
 {
-	return NULL;
-}
-
-void* RMovie::GetDataDescriptor()
-{
-	return NULL;
+	return a_oDescriptor;
 }

@@ -19,8 +19,7 @@ class ${className};
 class ${className}
 {
 public:
-	${className}();
-	virtual ~${className}();
+	virtual ~${className}() {};
 };
 #endif
 _EOF_
