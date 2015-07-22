@@ -5,3 +5,5 @@ Note that i did not add the dependencies to the repository, and the makefile is 
 
 * Resources: https://drive.google.com/open?id=0B3qj698FDkNraUtIa253NElBZ1E
 * Dependencies: https://drive.google.com/open?id=0B3qj698FDkNrd2RIdVliY25fQlk
+
+CMonoscopic, CStereoscopic and C* Classes are Computation classes, they contain specific code with respect to the context of this project.
