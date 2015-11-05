@@ -37,3 +37,4 @@ Debug
 *.sdf
 *.vcxproj.user
 *.opensdf
+*.log
