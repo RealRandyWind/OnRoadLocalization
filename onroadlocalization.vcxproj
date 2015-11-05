@@ -168,6 +168,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\CMonoscopic.cpp" />
+    <ClCompile Include="src\CStereoscopic.cpp" />
     <ClCompile Include="src\DDMovie.cpp" />
     <ClCompile Include="src\entry.cpp" />
     <ClCompile Include="src\FVMonoscopic.cpp" />
@@ -186,6 +187,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CMonoscopic.hpp" />
+    <ClInclude Include="src\CStereoscopic.hpp" />
     <ClInclude Include="src\DDMovie.hpp" />
     <ClInclude Include="src\FVMonoscopic.hpp" />
     <ClInclude Include="src\IComputation.hpp" />

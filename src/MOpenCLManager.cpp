@@ -186,19 +186,19 @@ unsigned int MOpenCLManager::Fx_CompileProgram(std::string sSource, std::string 
 
 	cl_program clProgram = clCreateProgramWithSource(a_clContext, 1, &csSource, NULL, &a_clError);
 	if (a_clError != CL_SUCCESS) {
-		a_mLogManager->Warning(0, "[MOpenCLManager.Fx_CompileProgram] unable to create OpenCL program.");
+		a_mLogManager->Error(0, "[MOpenCLManager.Fx_CompileProgram] unable to create OpenCL program.");
 		return 0;
 	}
 	
 	cl_uint clResult = clBuildProgram(clProgram, 1, &a_clDevice, NULL, NULL, NULL);
 	if (clResult) {
-		a_mLogManager->Warning(0,"[MOpenCLManager.Fx_CompileProgram] unable to build OpenCL program %u.",clResult);
+		a_mLogManager->Error(0,"[MOpenCLManager.Fx_CompileProgram] unable to build OpenCL program %u.",clResult);
 		return 0;
 	}
 
 	cl_kernel clKernel = clCreateKernel(clProgram, sFunction.c_str(), &a_clError);
 	if (a_clError != CL_SUCCESS) {
-		a_mLogManager->Warning(0, "[MOpenCLManager.Fx_CompileProgram] unable to create OpenCL kernel.");
+		a_mLogManager->Error(0, "[MOpenCLManager.Fx_CompileProgram] unable to create OpenCL kernel.");
 		return 0;
 	}
 
@@ -240,7 +240,7 @@ unsigned int MOpenCLManager::LoadProgramFromString(std::string sSource, std::str
 
 void MOpenCLManager::SetArgument(unsigned int iArgument, void* ptrValue, unsigned int iSize, bool bIsRaw, bool bIsNull, unsigned int eType)
 {
-	if(!a_iActiveProgram) {
+	if(!a_oActiveProgram) {
 		a_mLogManager->Warning(0, "[MOpenCLManager.SetArgument] there is no OpenCL program used.");
 		return;
 	} else if (iArgument < 0 || iArgument >= a_oActiveProgram->a_iArgumentCount) {
@@ -286,11 +286,6 @@ void MOpenCLManager::SetChuncksTo(unsigned int iDimensions, size_t* aiOffset, si
 
 void MOpenCLManager::Use(unsigned int iProgram)
 {
-	if(!iProgram) {
-		a_mLogManager->Warning(0, "[MOpenCLManager.Use] 0 id, use UnUse instead.");
-		UnUse(); return; 
-	}
-
 	if(a_iActiveProgram == iProgram){
 		a_mLogManager->Warning(0, "[MOpenCLManager.Use] programm already used");
 		return; 
@@ -312,7 +307,7 @@ void MOpenCLManager::Use(unsigned int iProgram)
 
 void MOpenCLManager::UnUse()
 {
-	if(!a_iActiveProgram){
+	if(!a_oActiveProgram){
 		a_mLogManager->Warning(0, "[MOpenCLManager.UnUse] no program is used.");
 		return; 
 	}
@@ -334,7 +329,7 @@ void MOpenCLManager::Destroy(unsigned int iProgram)
 
 void MOpenCLManager::Compute()
 {	
-	if(!a_iActiveProgram) {
+	if(!a_oActiveProgram) {
 		a_mLogManager->Warning(0, "[MOpenCLManager.Compute] there is no OpenCL program used.");
 		return; 
 	} else if(a_oActiveProgram->a_iNumberOfArgumentsSet < a_oActiveProgram->a_iArgumentCount) {
@@ -354,7 +349,7 @@ void MOpenCLManager::Compute()
 
 void MOpenCLManager::Result(unsigned int iArgument, void* ptrValue, bool bIsWaitForCompleteResults)
 {	
-	if(!a_iActiveProgram) {
+	if(!a_oActiveProgram) {
 		a_mLogManager->Warning(0, "[MOpenCLManager.Result] there is no OpenCL program used.");
 		return; 
 	} else if(!a_bIsRunning) {

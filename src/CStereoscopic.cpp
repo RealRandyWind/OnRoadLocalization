@@ -1,4 +1,4 @@
-#include "CMonoscopic.hpp"
+#include "CStereoscopic.hpp"
 #include "MLogManager.hpp"
 #include "MMemoryManager.hpp"
 #include "MResourceManager.hpp"
@@ -8,20 +8,20 @@
 #include "FVMonoscopic.hpp"
 
 /* temporary magick number solution */
-#define CMONOSCOPIC_FRAME_SPAN 3
-#define CMONOSCOPIC_CLASS_COUNT 16
+#define CSTEREOSCOPIC_FRAME_SPAN 3
+#define CSTEREOSCOPIC_CLASS_COUNT 16
 
-CMonoscopic::CMonoscopic()
+CStereoscopic::CStereoscopic()
 {
 
 }
 
-CMonoscopic::~CMonoscopic()
+CStereoscopic::~CStereoscopic()
 {
 
 }
 
-void CMonoscopic::Run()
+void CStereoscopic::Run()
 {
 	/* initialize managers */
 	MLogManager* mLogManager = MLogManager::GetInstance();
@@ -30,31 +30,31 @@ void CMonoscopic::Run()
 	MOpenCLManager* mOpenCLManager = MOpenCLManager::GetInstance();
 	MSDLManager* mSDLManager = MSDLManager::GetInstance();
 
-	mLogManager->Log(0, "[CMonoscopic.Run] Running");
+	mLogManager->Log(0,"[CStereoscopic.Run] Running");
 
 	/* initialization */
-	unsigned int iMovie = mResourceManager->LoadResourceFromFile("D:/Repositories/onroadlocalization/resources/Scotland Scenic Drives 42.  Stranraer to Cairnryan (via A77)-JWys4j1BjC4.mp4");
+	unsigned int iMovie = mResourceManager->LoadResourceFromFile("D:/Repositories/onroadlocalization/resources/3D STEREOSCOPIC ROAD-fMXW-4gmIwA.mp4");
 	IResource* oMovie = mResourceManager->Get(iMovie);
 	DDMovie* oDDMovie = (DDMovie*)oMovie->GetDataDescriptor();
 	DDMovie* oDDSubMovie = new DDMovie(oDDMovie);
 
 	mSDLManager->SetSize(oDDMovie->a_iWidth, oDDMovie->a_iHeight);
 
-	unsigned int iProgram = mOpenCLManager->LoadProgramFromFile("D:/Repositories/onroadlocalization/opencl/monoScopic.opencl",5);
+	unsigned int iProgram = mOpenCLManager->LoadProgramFromFile("D:/Repositories/onroadlocalization/opencl/stereoScopic.opencl",5);
 
 	size_t iSizeFrame = oDDMovie->a_iHeight * oDDMovie->a_iWidth;
 	unsigned int iBytesFrame = iSizeFrame * sizeof(glm::u8vec4);
-	mLogManager->Info(0, "[CMonoscopic.Run] movie dimesions (%i,%i).", oDDMovie->a_iHeight, oDDMovie->a_iWidth);
+	mLogManager->Info(0, "[CStereoscopic.Run] movie dimesions (%i,%i).", oDDMovie->a_iHeight, oDDMovie->a_iWidth);
 	
-	unsigned int iBytesFrameBuffer = CMONOSCOPIC_FRAME_SPAN * iBytesFrame;
+	unsigned int iBytesFrameBuffer = CSTEREOSCOPIC_FRAME_SPAN * iBytesFrame;
 	glm::u8vec4* oFrameBuffer = (glm::u8vec4*)mMemoryManager->Allocate(iBytesFrameBuffer);
 	uint8_t* oFrame = (uint8_t*)oFrameBuffer;
 	unsigned int iWriteIndex = 0;
 
-	unsigned int iBytesFrameIndexMap = sizeof(unsigned int) * CMONOSCOPIC_FRAME_SPAN;
+	unsigned int iBytesFrameIndexMap = sizeof(unsigned int) * CSTEREOSCOPIC_FRAME_SPAN;
 	unsigned int* liFrameIndexMap = (unsigned int*)mMemoryManager->Allocate(iBytesFrameIndexMap);
 
-	unsigned int iBytesResults = sizeof(float) * CMONOSCOPIC_CLASS_COUNT;
+	unsigned int iBytesResults = sizeof(float) * CSTEREOSCOPIC_CLASS_COUNT;
 	uint8_t* ldResults = (uint8_t*)mMemoryManager->Allocate(iBytesResults);
 	
 	unsigned int iBytesFreatureVector = sizeof(FVMonoscopic) * iSizeFrame;
@@ -77,7 +77,7 @@ void CMonoscopic::Run()
 		if (!mSDLManager->CheckEvent() && mSDLManager->IsExit()) { break; }
 
 		/* put cap to frames fed to buffer and determine index map */
-		oDDSubMovie->a_iFrames = (oDDMovie->a_iFrames >= CMONOSCOPIC_FRAME_SPAN ? CMONOSCOPIC_FRAME_SPAN : oDDMovie->a_iFrames);
+		oDDSubMovie->a_iFrames = (oDDMovie->a_iFrames >= CSTEREOSCOPIC_FRAME_SPAN ? CSTEREOSCOPIC_FRAME_SPAN : oDDMovie->a_iFrames);
 		oDDSubMovie->a_iFrame = iWriteIndex;
 		liFrameIndexMap[iWriteIndex] = iWriteIndex * iSizeFrame;
 
@@ -95,7 +95,7 @@ void CMonoscopic::Run()
 		mSDLManager->Display(oFrame);
 
 		/* swap buffer */
-		iWriteIndex = (oDDMovie->a_iFrames + 1) % CMONOSCOPIC_FRAME_SPAN;
+		iWriteIndex = (oDDMovie->a_iFrames + 1) % CSTEREOSCOPIC_FRAME_SPAN;
 		oFrame = (uint8_t*)oFrameBuffer + iWriteIndex * iBytesFrame;
 	}
 
@@ -105,5 +105,5 @@ void CMonoscopic::Run()
 	mMemoryManager->DeAllocate(loFreatureVector); 
 	mMemoryManager->DeAllocate(ldResults);
 
-	mLogManager->Log(0, "[CMonoscopic.Run] Stopped");
+	mLogManager->Log(0, "[CStereoscopic.Run] Stopped");
 }

@@ -44,6 +44,7 @@ RMovie::~RMovie()
 void RMovie::Fx_LoadMovie(std::string sPath)
 {	
 	av_register_all();
+	avformat_network_init();
 
 	if (avformat_open_input(&a_oFContext, sPath.c_str(), NULL, NULL) < 0) {
 		a_mLogManager->Warning(0, "[RMovie.Fx_LoadMovie] could not open file \"%s\".", sPath.c_str());
