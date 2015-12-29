@@ -90,8 +90,8 @@ uint8_t* RMovie::Fx_NextFrame(uint8_t* oDestination)
 
 			if (!a_iFrameFinished) { continue; }
 
-			a_oDescriptor->a_iFrame = a_oCContext->frame_number;
-			a_oDescriptor->a_iFrames = a_oDescriptor->a_iFrame;
+			a_oDescriptor->a_iFrame = a_oCContext->frame_number - 1;
+			a_oDescriptor->a_iFrames = a_oDescriptor->a_iFrame + 1;
 			a_oDescriptor->a_iPitch = a_oFrame->linesize[0];
 			a_oDescriptor->a_iWidth = a_oFrame->width;
 			a_oDescriptor->a_iHeight = a_oFrame->height;

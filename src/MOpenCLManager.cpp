@@ -66,12 +66,11 @@ void MOpenCLManager::SetUp()
 		return;
 	}
 
-	a_clCommandQueue = clCreateCommandQueue(a_clContext, a_clDevice, 0, NULL);
+	a_clCommandQueue = clCreateCommandQueue(a_clContext, a_clDevice, 0, &a_clError);
 	if (a_clError != CL_SUCCESS) {
 		a_mLogManager->Error(0, "[MOpenCLManager.SetUp] unable to create command queue for device.");
 		return;
 	}
-
 	
 	a_clError = clGetDeviceInfo(a_clDevice, CL_DEVICE_MAX_MEM_ALLOC_SIZE , sizeof(cl_ulong), &a_clMaxMemSize, 0);
 	if (a_clError != CL_SUCCESS) {
@@ -186,24 +185,24 @@ unsigned int MOpenCLManager::Fx_CompileProgram(std::string sSource, std::string 
 
 	cl_program clProgram = clCreateProgramWithSource(a_clContext, 1, &csSource, NULL, &a_clError);
 	if (a_clError != CL_SUCCESS) {
-		a_mLogManager->Error(0, "[MOpenCLManager.Fx_CompileProgram] unable to create OpenCL program.");
+		a_mLogManager->Error(0, "[MOpenCLManager.Fx_CompileProgram] unable to create OpenCL program %u.", a_iActiveProgram);
 		return 0;
 	}
 	
-	cl_uint clResult = clBuildProgram(clProgram, 1, &a_clDevice, NULL, NULL, NULL);
-	if (clResult) {
-		a_mLogManager->Error(0,"[MOpenCLManager.Fx_CompileProgram] unable to build OpenCL program %u.",clResult);
+	a_clError = clBuildProgram(clProgram, 1, &a_clDevice, NULL, NULL, NULL);
+	if (a_clError != CL_SUCCESS) {
+		a_mLogManager->Error(0,"[MOpenCLManager.Fx_CompileProgram] unable to build OpenCL program %u.", a_iActiveProgram);
 		return 0;
 	}
 
 	cl_kernel clKernel = clCreateKernel(clProgram, sFunction.c_str(), &a_clError);
 	if (a_clError != CL_SUCCESS) {
-		a_mLogManager->Error(0, "[MOpenCLManager.Fx_CompileProgram] unable to create OpenCL kernel.");
+		a_mLogManager->Error(0, "[MOpenCLManager.Fx_CompileProgram] unable to create OpenCL kernel \"%s\" for program %u.", sFunction.c_str(), a_iActiveProgram);
 		return 0;
 	}
 
 	unsigned int iProgram = (unsigned int)a_lPrograms.size();
-	a_lPrograms.push_back(new OpenCLProgram(iProgram,clProgram,clKernel,sFunction,iArgumentCount,"",clResult));
+	a_lPrograms.push_back(new OpenCLProgram(iProgram,clProgram,clKernel,sFunction,iArgumentCount,""));
 	return iProgram;
 }
 

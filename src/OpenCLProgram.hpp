@@ -15,7 +15,6 @@ public:
 	unsigned int a_iDimensions;
 	cl_program a_clProgram;
 	cl_kernel a_clKernel;
-	cl_uint a_clResult;
 
 	std::string a_sFunction;
 	std::string a_sOptions;
@@ -26,7 +25,7 @@ public:
 	size_t* a_aiGlobalRange; 
 	size_t* a_aiLocalRange;
 	
-	OpenCLProgram(unsigned int iProgram, cl_program clProgram, cl_kernel clKernel, std::string sFunction, unsigned int iArgumentCount, std::string sOptions, cl_uint clReslut);
+	OpenCLProgram(unsigned int iProgram, cl_program clProgram, cl_kernel clKernel, std::string sFunction, unsigned int iArgumentCount, std::string sOptions);
 	~OpenCLProgram();
 	bool IsParallel();
 };

@@ -11,6 +11,7 @@ public:
 	unsigned int a_iPitch;
 	unsigned int a_iFrame;
 	unsigned int a_iFrames;
+	unsigned int a_iMaxFrames;
 	float a_dFps;
 	float a_dNorm;
 	

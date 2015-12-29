@@ -1,6 +1,5 @@
 #include "MComputationManager.hpp"
 #include "CMonoscopic.hpp"
-#include "CStereoscopic.hpp"
 
 MComputationManager* MComputationManager::a_oInstance = 0;
 
@@ -59,6 +58,6 @@ void MComputationManager::Run()
 	}
 
 	// TODO DO DIFFERENT
-	IComputation* oComputation = new CStereoscopic();
+	IComputation* oComputation = new CMonoscopic();
 	oComputation->Run();
 }

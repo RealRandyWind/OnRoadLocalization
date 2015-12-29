@@ -168,10 +168,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\CMonoscopic.cpp" />
-    <ClCompile Include="src\CStereoscopic.cpp" />
     <ClCompile Include="src\DDMovie.cpp" />
     <ClCompile Include="src\entry.cpp" />
-    <ClCompile Include="src\FVMonoscopic.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MComputationManager.cpp" />
     <ClCompile Include="src\MLogManager.cpp" />
@@ -187,12 +185,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CMonoscopic.hpp" />
-    <ClInclude Include="src\CStereoscopic.hpp" />
     <ClInclude Include="src\DDMovie.hpp" />
-    <ClInclude Include="src\FVMonoscopic.hpp" />
     <ClInclude Include="src\IComputation.hpp" />
     <ClInclude Include="src\IDataDescriptor.hpp" />
-    <ClInclude Include="src\IFeatureVector.hpp" />
     <ClInclude Include="src\Main.hpp" />
     <ClInclude Include="src\MComputationManager.hpp" />
     <ClInclude Include="src\MLogManager.hpp" />
