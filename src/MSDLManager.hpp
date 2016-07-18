@@ -8,6 +8,16 @@
 #include "IResource.hpp"
 #include "MLogManager.hpp"
 
+enum ESDLBlendMode
+{
+	SDL_BLEND_NONE = SDL_BLENDMODE_NONE,
+	SDL_BLEND_ALPHA = SDL_BLENDMODE_BLEND,
+	SDL_BLEND_ADD = SDL_BLENDMODE_ADD,
+	SDL_BLEND_MOD = SDL_BLENDMODE_MOD,
+
+	SDL_BLEND_DEFAULT = SDL_BLEND_ALPHA
+};
+
 class MSDLManager;
 class MSDLManager
 {
@@ -49,7 +59,7 @@ public:
 
 	void SetSize(unsigned int iWidth, unsigned int iHeight);
 	void Display(uint8_t* oImage);
-	void Display(IResource* oResource); /* TEMP maybe removed */
+	void Blend(uint8_t* oImage, unsigned int eType = SDL_BLEND_DEFAULT);
 
 	int GetDelta();
 };

@@ -1,0 +1,7 @@
+__device__ bool bIsStop;
+
+__global__ void entry()
+{
+	while(!bIsStop) {
+	}
+}

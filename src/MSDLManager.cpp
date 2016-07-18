@@ -140,10 +140,14 @@ bool MSDLManager::IsExit()
 	return a_sdlEvent.type == SDL_QUIT;
 }
 
-/* refactor */
 void MSDLManager::Display(uint8_t* oImage)
 {
-	if(!oImage) {
+	Blend(oImage, SDL_BLEND_NONE);
+}
+
+void MSDLManager::Blend(uint8_t* oImage, unsigned int eType)
+{
+	if (!oImage) {
 		a_mLogManager->Warning(0, "[MSDLManager.Display] trying to dispaly NULL.");
 		return;
 	}
@@ -163,30 +167,7 @@ void MSDLManager::Display(uint8_t* oImage)
 	SDL_UnlockTexture(a_sdlTexture);
 
 	SDL_RenderClear(a_sdlRenderer);
-	SDL_RenderCopy(a_sdlRenderer, a_sdlTexture, NULL, NULL);
-	SDL_RenderPresent(a_sdlRenderer);
-}
-
-void MSDLManager::Display(IResource* oResource)
-{
-	if (!oResource) {
-		a_mLogManager->Warning(0, "[MSDLManager.Display] trying to dispaly NULL as resources.");
-		return;
-	}
-
-	int iDestinationPitch = -1;
-	void* oDestinationImage = NULL;
-
-	if (SDL_LockTexture(a_sdlTexture, NULL, &oDestinationImage, &iDestinationPitch) < 0) {
-		a_mLogManager->Error(0, "[MSDLManager.Display] unable to lock texture, %s.", SDL_GetError());
-		return;
-	}
-
-	oResource->Display(&oDestinationImage, iDestinationPitch);
-
-	SDL_UnlockTexture(a_sdlTexture);
-
-	SDL_RenderClear(a_sdlRenderer);
+	SDL_SetTextureBlendMode(a_sdlTexture, (SDL_BlendMode)eType);
 	SDL_RenderCopy(a_sdlRenderer, a_sdlTexture, NULL, NULL);
 	SDL_RenderPresent(a_sdlRenderer);
 }

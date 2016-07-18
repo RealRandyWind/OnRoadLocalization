@@ -1,5 +1,4 @@
 #include "MMemoryManager.hpp"
-#include <assert.h>
 
 MMemoryManager* MMemoryManager::a_oInstance = 0;
 
@@ -56,11 +55,11 @@ void MMemoryManager::ShutDown()
 	a_mLogManager->Success(0,"[MMemoryManager.ShutDown] done.");
 }
 
-void* MMemoryManager::Allocate(size_t iSize)
+void* MMemoryManager::Allocate(size_t nSize)
 {
 	void* oReturn = NULL;
 	
-	oReturn = malloc(iSize);
+	oReturn = malloc(nSize);
 	if (!oReturn) {
 		a_mLogManager->Error(0,"[MMemoryManager.Allocate] unable to allocate memory.");
 		return NULL;
@@ -71,7 +70,7 @@ void* MMemoryManager::Allocate(size_t iSize)
 	return oReturn;
 }
 
-void* MMemoryManager::ReAllocate(void* oTarget, size_t iSize)
+void* MMemoryManager::ReAllocate(void* oTarget, size_t nSize)
 {
 	if (!oTarget) {
 		a_mLogManager->Warning(0,"[MMemoryManager.ReAllocate] target is NULL.");
@@ -80,7 +79,7 @@ void* MMemoryManager::ReAllocate(void* oTarget, size_t iSize)
 
 	void* oReturn = NULL;
 	
-	oReturn = realloc(oTarget, iSize);
+	oReturn = realloc(oTarget, nSize);
 	if (!oReturn) {
 		a_mLogManager->Error(0,"[MMemoryManager.ReAllocate] unable to reallocate memory.");
 		return NULL;

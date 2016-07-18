@@ -3,8 +3,8 @@
 #include <fstream>
 #include <sstream>
 
-#define MOPENCL_READLINE_SIZE 256
-#define MOPENCL_FUNCTIONNAME_SIZE 64
+#define MOPENCL_READLINE_SIZE 1024
+#define MOPENCL_FUNCTIONNAME_SIZE 512
 
 MOpenCLManager* MOpenCLManager::a_oInstance = 0;
 
@@ -47,7 +47,6 @@ void MOpenCLManager::SetUp()
 	}
 	a_bIsShutDown = false;
 
-	
 	a_clError = clGetPlatformIDs(1,&a_clPlatform,NULL);
 	if (a_clError != CL_SUCCESS) {
 		a_mLogManager->Error(0, "[MOpenCLManager.SetUp] unable to find any platform.");
@@ -77,7 +76,6 @@ void MOpenCLManager::SetUp()
 		a_mLogManager->Warning(0, "[MOpenCLManager.SetUp] unable to retrieve maximum memory size available by current device.");
 	}
 	a_mLogManager->Info(0,"[MOpenCLManager.SetUp] device has %lu of memmory available.",a_clMaxMemSize);
-
 
 	a_bIsSetUp = true;
 	a_mLogManager->Success(0, "[MOpenCLManager.SetUp] done.");
@@ -118,7 +116,8 @@ void MOpenCLManager::ShutDown()
 void MOpenCLManager::Fx_EnqueueTask()
 {
 	if(!a_oActiveProgram->IsParallel()) {
-		/*TODO deprecated*/
+		/* TODO deprecated */
+		a_mLogManager->Warning(0, "[MOpenCLManager.Fx_EnqueueTask] deprecated implementation using clEnqueueTask.");
 		a_clError = clEnqueueTask(a_clCommandQueue, a_oActiveProgram->a_clKernel, 0, NULL, &a_clDone);
 		return;
 	}
@@ -127,7 +126,7 @@ void MOpenCLManager::Fx_EnqueueTask()
 		a_oActiveProgram->a_iDimensions, a_oActiveProgram->a_aiOffset,
 		a_oActiveProgram->a_aiGlobalRange, a_oActiveProgram->a_aiLocalRange, 0, NULL, &a_clDone);
 
-	if (a_clError != CL_SUCCESS) { return;  }
+	if (a_clError != CL_SUCCESS) { return; }
 	
 	clWaitForEvents(1, &a_clDone);
 }
@@ -139,7 +138,7 @@ void MOpenCLManager::Fx_LoadArguments()
 		if(!oArgument) { continue; }
 		if(!oArgument->a_bIsRaw) {
 			a_clError = clSetKernelArg(a_oActiveProgram->a_clKernel, oArgument->a_iArgument, sizeof(cl_mem), &oArgument->a_clValue);
-		}else {
+		} else {
 			a_clError = clSetKernelArg(a_oActiveProgram->a_clKernel, oArgument->a_iArgument, oArgument->a_iSize, oArgument->a_ptrValue);
 		}
 		if (a_clError != CL_SUCCESS) {
@@ -151,6 +150,7 @@ void MOpenCLManager::Fx_LoadArguments()
 
 void MOpenCLManager::Fx_DestroyArgument(OpenCLArgument* oArgument)
 {
+	if(!oArgument) { return; }
 	if(!oArgument->a_bIsRaw) { clReleaseMemObject(oArgument->a_clValue); }
 	delete oArgument;
 }
@@ -172,7 +172,6 @@ void MOpenCLManager::Fx_DestroyProgram(OpenCLProgram* oProgram)
 	}
 	
 	for(OpenCLArgument* oArgument : oProgram->a_lArguments) {
-		if(!oArgument) { continue; }
 		Fx_DestroyArgument(oArgument);
 	}
 	
@@ -202,7 +201,7 @@ unsigned int MOpenCLManager::Fx_CompileProgram(std::string sSource, std::string 
 	}
 
 	unsigned int iProgram = (unsigned int)a_lPrograms.size();
-	a_lPrograms.push_back(new OpenCLProgram(iProgram,clProgram,clKernel,sFunction,iArgumentCount,""));
+	a_lPrograms.push_back(new OpenCLProgram(iProgram, clProgram, clKernel, sFunction, iArgumentCount, ""));
 	return iProgram;
 }
 
@@ -218,7 +217,7 @@ unsigned int MOpenCLManager::LoadProgramFromFile(std::string sPath, std::string 
 	
 	std::ifstream ssFile(sPath);
 	if(!ssFile) {
-		a_mLogManager->Warning(0, "[MOpenCLManager.LoadProgramFromFile] file %s does not exist.",sPath.c_str());
+		a_mLogManager->Warning(0, "[MOpenCLManager.LoadProgramFromFile] file %s does not exist.", sPath.c_str());
 		return 0;
 	}
 
@@ -228,7 +227,7 @@ unsigned int MOpenCLManager::LoadProgramFromFile(std::string sPath, std::string 
 		sSource += sLine;
 	}
 
-	return LoadProgramFromString(sSource,sFunction,iArgumentCount);
+	return LoadProgramFromString(sSource, sFunction, iArgumentCount);
 }
 
 unsigned int MOpenCLManager::LoadProgramFromString(std::string sSource, std::string sFunction, unsigned int iArgumentCount)
@@ -285,8 +284,10 @@ void MOpenCLManager::SetChuncksTo(unsigned int iDimensions, size_t* aiOffset, si
 
 void MOpenCLManager::Use(unsigned int iProgram)
 {
-	if(a_iActiveProgram == iProgram){
-		a_mLogManager->Warning(0, "[MOpenCLManager.Use] programm already used");
+	if (!iProgram) {
+		a_mLogManager->Warning(0, "[MOpenCLManager.Use] Use(0) results in same effect as UnUse().");
+	} else if(a_iActiveProgram == iProgram) {
+		a_mLogManager->Warning(0, "[MOpenCLManager.Use] programm already used.");
 		return; 
 	} else if(iProgram < 0 || a_lPrograms.size() <= iProgram) {
 		a_mLogManager->Warning(0, "[MOpenCLManager.Use] program %d not in scope.",iProgram);
@@ -297,8 +298,7 @@ void MOpenCLManager::Use(unsigned int iProgram)
 	a_oActiveProgram = a_lPrograms[iProgram];
 
 	// ASSUMPTION MAPPING IS ALWAYS IN SYNC
-	if(a_oActiveProgram==NULL)
-	{
+	if(a_oActiveProgram==NULL) {
 		a_mLogManager->Warning(0, "[MOpenCLManager.Use] OpenCL program is destroyed.");
 		a_iActiveProgram = 0;
 	}
@@ -306,7 +306,7 @@ void MOpenCLManager::Use(unsigned int iProgram)
 
 void MOpenCLManager::UnUse()
 {
-	if(!a_oActiveProgram){
+	if(!a_oActiveProgram) {
 		a_mLogManager->Warning(0, "[MOpenCLManager.UnUse] no program is used.");
 		return; 
 	}
@@ -316,8 +316,10 @@ void MOpenCLManager::UnUse()
 
 void MOpenCLManager::Destroy(unsigned int iProgram)
 {
-	if(iProgram < 0 || a_lPrograms.size() <= iProgram)
-	{
+	if (!iProgram) {
+		a_mLogManager->Warning(0, "[MOpenCLManager.Destory] can't destroy, 0 not a program.");
+		return;
+	} else if(iProgram < 0 || a_lPrograms.size() <= iProgram) {
 		a_mLogManager->Warning(0, "[MOpenCLManager.Destory] program %d not in scope.",iProgram);
 		return; 
 	}
@@ -369,8 +371,8 @@ void MOpenCLManager::Result(unsigned int iArgument, void* ptrValue, bool bIsWait
 	//unsigned int k2 = 4*sizeof(float);
 	//a_mLogManager->LogF(LOG_DEBUG,0,"Debugging %f,%f,%f,%f",temp2[k2+0],temp2[k2+1],temp2[k2+2],temp2[k2+3]);
 
-	//ptrValue = clEnqueueMapBuffer(a_clCommandQueue,oArgument->a_clValue,bIsWaitForCompleteResults,CL_MAP_READ,0,oArgument->a_iSize,0,NULL,NULL,&a_clError);
-	a_clError = clEnqueueReadBuffer(a_clCommandQueue, oArgument->a_clValue , bIsWaitForCompleteResults, 0, oArgument->a_iSize, ptrValue, 0, NULL, NULL);
+	//ptrValue = clEnqueueMapBuffer(a_clCommandQueue, oArgument->a_clValue, bIsWaitForCompleteResults, CL_MAP_READ, 0, oArgument->a_iSize, 0, NULL, NULL, &a_clError);
+	a_clError = clEnqueueReadBuffer(a_clCommandQueue, oArgument->a_clValue, bIsWaitForCompleteResults, 0, oArgument->a_iSize, ptrValue, 0, NULL, NULL);
 	if (a_clError != CL_SUCCESS) {
 		a_mLogManager->Warning(0, "[MOpenCLManager.Result] unable to retrieve result from command queue.");
 		return;
@@ -379,6 +381,11 @@ void MOpenCLManager::Result(unsigned int iArgument, void* ptrValue, bool bIsWait
 
 void MOpenCLManager::Finish()
 {
+	if (!a_oActiveProgram) {
+		a_mLogManager->Warning(0, "[MOpenCLManager.Finish] no active program.");
+		return;
+	}
+
 	a_clError = clFinish(a_clCommandQueue);
 	if (a_clError != CL_SUCCESS) {
 		a_mLogManager->Warning(0, "[MOpenCLManager.Finish] unable to successfully await finish of command queue completion.");

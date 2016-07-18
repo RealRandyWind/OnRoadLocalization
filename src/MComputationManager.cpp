@@ -1,5 +1,5 @@
 #include "MComputationManager.hpp"
-#include "CMonoscopic.hpp"
+#include "CNeuralNetwork.hpp"
 
 MComputationManager* MComputationManager::a_oInstance = 0;
 
@@ -58,6 +58,6 @@ void MComputationManager::Run()
 	}
 
 	// TODO DO DIFFERENT
-	IComputation* oComputation = new CMonoscopic();
+	IComputation* oComputation = new CNeuralNetwork();
 	oComputation->Run();
 }

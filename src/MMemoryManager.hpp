@@ -1,9 +1,10 @@
 #ifndef MMEMORYMANAGER_HPP
 #define MMEMORYMANAGER_HPP
 #include "MLogManager.hpp"
+#include "Allocator.hpp"
 
 class MMemoryManager;
-class MMemoryManager
+class MMemoryManager : public Allocator
 {
 private:
 	MMemoryManager();
@@ -22,8 +23,8 @@ public:
 	void SetUp();
 	void ShutDown();
 
-	void* Allocate(size_t iSize);
-	void* ReAllocate(void* oTarget, size_t iSize);
+	void* Allocate(size_t nSize);
+	void* ReAllocate(void* oTarget, size_t nSize);
 	void DeAllocate(void* oTarget);
 	/*void Defragmentate();*/
 };

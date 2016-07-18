@@ -1,6 +1,6 @@
 #ifndef MOPENCLMANAGER_HPP
 #define MOPENCLMANAGER_HPP
-#include "CL/opencl.h"
+#include "CL/opencl.h"	
 #include "OpenCLProgram.hpp"
 #include "OpenCLArgument.hpp"
 #include "MLogManager.hpp"

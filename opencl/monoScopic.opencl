@@ -33,8 +33,6 @@ FeatureVector extractFeatures(
 	__global read_only uchar4* lpData,
 	__global read_only DataDescriptorMovie* oDescriptor,
 	__global read_only uint* liFrameMap,
-	__global read_only float* ldKernels,
-	__global read_only uint* liKernelLenghts,
 	uint iPixel,
 	float dEps,
 	__global write_only uchar4* lpDisplay)
@@ -70,20 +68,6 @@ FeatureVector extractFeatures(
 	float dGx = 0.0f;
 	float dGy = 0.0f;
 	float dGt = 0.0f;
-
-	/*for(int xy=0; xy<liKernel[0]; ++xy)
-	{
-		dGx += ldKernels[xy] * lpData[iIndexFrame + iPixel + xy];
-		dGy += ldKernels[liKernel[0] + xy] * lpData[iIndexFrame + iPixel + xy];
-	}
-
-	/*uint iTimeKernelIndex = liKernelLenghts[0]*2;
-	for(uint t=0; t<liKernelLenghts[1]; ++t)
-	{
-		uint iFrameTemp = ((iFrame + t) % iFrames) + (iMaxFrames - iFrames);
-		uint iIndexFrameTemp = liFrameMap[iFrameTemp];
-		dGt += ldKernels[iTimeKernelIndex + t] * length(convert_float4(lpData[iIndexFrameTemp + iPixel]));
-	}*/
 	
 
 	oFeatureVector.dGTI = 0.0f;
@@ -102,8 +86,6 @@ __kernel void entry(
 	__global write_only FeatureVector* loFeatures,
 	__global read_only DataDescriptorMovie* oDescriptor,
 	__global read_only uint* liFrameMap,
-	__global read_only float* ldKernels,
-	__global read_only uint* liKernelLenghts,
 	float dEps,
 	__global write_only uchar4* lpDisplay)
 {
@@ -117,8 +99,6 @@ __kernel void entry(
 		lpData,
 		oDescriptor,
 		liFrameMap,
-		ldKernels,
-		liKernelLenghts,
 		iThread,
 		dEps,
 		lpDisplay
