@@ -52,9 +52,9 @@ void LayerdNeuralNetwork::ReInitialize(
 	/* compute offsets in order */
 	unsigned int nBytesTempOffset = 0;
 	unsigned int nBytesChargeOffset = oInitializer.nHidden * sizeof(DataTypesLayerd::DCharge) + nBytesTempOffset;;
-	unsigned int nBytesNeuronsOffset = oInitializer.nHidden * oInitializer.nLayers * sizeof(DataTypesLayerd::DCharge) + nBytesChargeOffset;
-	unsigned int nBytesInputOffset = oInitializer.nHidden * sizeof(DataTypesLayerd::DNeuron) + nBytesNeuronsOffset;
-	unsigned int nBytesSynapseLayerOffset = oInitializer.nInput * sizeof(DataTypesLayerd::DInputSynapse) + nBytesInputOffset;
+	unsigned int nBytesNeuronsOffset = oInitializer.nHidden * sizeof(DataTypesLayerd::DCharge) + nBytesChargeOffset;
+	unsigned int nBytesInputOffset = oInitializer.nHidden * oInitializer.nLayers * sizeof(DataTypesLayerd::DNeuron) + nBytesNeuronsOffset;
+	unsigned int nBytesSynapseLayerOffset = oInitializer.nInput * oInitializer.nHidden * sizeof(DataTypesLayerd::DInputSynapse) + nBytesInputOffset;
 	unsigned int nBytesOutputOffset = oInitializer.nHidden * oInitializer.nHidden * oInitializer.nLayers * sizeof(DataTypesLayerd::DSynapse) + nBytesSynapseLayerOffset;
 
 	/* create input, output placeholders */
